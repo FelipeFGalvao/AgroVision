@@ -1,0 +1,23 @@
+# Core Data Science
+numpy
+pandas
+scikit-learn
+
+# Data Visualization
+matplotlib
+seaborn
+
+# API / Dashboard
+streamlit
+fastapi
+uvicorn
+
+# API Communication
+requests
+
+# Development Environment
+ipykernel
+
+# Utilities
+joblib
+python-dotenv

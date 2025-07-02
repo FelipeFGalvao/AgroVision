@@ -1,0 +1,28 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.so
+
+# Virtual Environments
+venv/
+.venv/
+env/
+.env/
+ENV/
+
+# IDE / Editor specific files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# dotenv environment variables file
+.env
+
+# Notebook checkpoints
+.ipynb_checkpoints
+
+# Build and distribution artifacts
+dist/
+build/
+*.egg-info/
