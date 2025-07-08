@@ -1,28 +1,69 @@
-# Byte-compiled / optimized / DLL files
+# ==============================================================================
+# Arquivos de Bytecode e Compilados do Python
+# ==============================================================================
 __pycache__/
 *.pyc
 *.so
+*.o
 
-# Virtual Environments
+
+# ==============================================================================
+# Ambientes Virtuais
+# ==============================================================================
 venv/
 .venv/
 env/
 .env/
 ENV/
 
-# IDE / Editor specific files
+
+# ==============================================================================
+# Arquivos de IDE e Editores de Texto
+# ==============================================================================
 .vscode/
 .idea/
 *.sublime-project
 *.sublime-workspace
 
-# dotenv environment variables file
-.env
 
-# Notebook checkpoints
+# ==============================================================================
+# Arquivos de Sistema Operacional
+# ==============================================================================
+.DS_Store
+Thumbs.db
+
+
+# ==============================================================================
+# Arquivos de Notebook (Checkpoints)
+# ==============================================================================
 .ipynb_checkpoints
 
-# Build and distribution artifacts
+
+# ==============================================================================
+# Arquivos de Configuração e Segredos
+# ==============================================================================
+# Arquivo de variáveis de ambiente (NUNCA versione senhas ou chaves de API)
+.env
+*.env
+
+
+# ==============================================================================
+# Artefatos de Build e Distribuição
+# ==============================================================================
 dist/
 build/
 *.egg-info/
+
+
+# ==============================================================================
+# Artefatos de Data Science e Machine Learning
+# ==============================================================================
+# Dados processados (devem ser recriados a partir do código e dos dados brutos)
+data/processed/
+
+# Modelos salvos
+*.pkl
+*.joblib
+
+# Logs de experimentos do MLflow
+mlruns/
