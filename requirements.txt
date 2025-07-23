@@ -21,3 +21,5 @@ ipykernel
 # Utilities
 joblib
 python-dotenv
+tqdm
+#
