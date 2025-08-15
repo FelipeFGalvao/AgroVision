@@ -1,5 +1,5 @@
 # ==============================================================================
-# app.py - Dashboard Interativo para o AgroVision
+# app.py - Dashboard Interativo para o AgroVision (Versão Otimizada)
 # ==============================================================================
 
 import streamlit as st
@@ -29,12 +29,10 @@ def carregar_modelo():
 def carregar_dados_localizacao():
     """Carrega os dados para obter a lista de municípios e coordenadas."""
     try:
-        # Usamos o nosso dataset que já tem as coordenadas
-        caminho_dados = 'data/processed/dataset_completo_com_clima.csv'
-        df = pd.read_csv(caminho_dados)
-        # Selecionamos apenas as colunas necessárias e removemos duplicados
+        caminho_dados = 'data/processed/dataset_final_completo.parquet'
+        df = pd.read_parquet(caminho_dados)
+        
         df_localizacoes = df[['municipio_nome', 'uf', 'latitude', 'longitude']].drop_duplicates().sort_values(by='municipio_nome')
-        # Criamos uma coluna de exibição "Nome (UF)"
         df_localizacoes['display_name'] = df_localizacoes['municipio_nome'] + ' (' + df_localizacoes['uf'] + ')'
         return df_localizacoes
     except FileNotFoundError:
@@ -50,26 +48,23 @@ st.markdown("Selecione o município e insira os dados da safra para obter uma pr
 
 # Verificar se os dados foram carregados
 if df_localizacoes is None or modelo is None:
-    st.error("ERRO: Arquivos de dados ('dataset_completo_com_clima.csv') ou do modelo não foram encontrados. Execute os notebooks de preparação.")
+    st.error("ERRO: Arquivos de dados ('dataset_final_completo.parquet') ou do modelo não foram encontrados. Execute os notebooks de preparação.")
 else:
     col1, col2 = st.columns(2)
 
     with col1:
         st.subheader("🌍 Seleção do Município")
         
-        # Criar a lista de opções para o selectbox
         lista_municipios = df_localizacoes['display_name'].tolist()
         municipio_selecionado = st.selectbox(
             "Selecione o município",
             options=lista_municipios
         )
         
-        # Encontrar as coordenadas correspondentes
         local_selecionado = df_localizacoes[df_localizacoes['display_name'] == municipio_selecionado].iloc[0]
         latitude = local_selecionado['latitude']
         longitude = local_selecionado['longitude']
         
-        # Exibir as coordenadas encontradas (desabilitado para edição)
         st.text_input("Latitude", value=f"{latitude:.4f}", disabled=True)
         st.text_input("Longitude", value=f"{longitude:.4f}", disabled=True)
 
