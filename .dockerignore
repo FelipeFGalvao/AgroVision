@@ -1,0 +1,36 @@
+#=======================================
+# dockerignore mais geral e genérico pra maioria das máquinas
+#=======================================
+# Git
+.git
+.gitignore
+
+# Ambiente virtual do Python (de froma abrangente e mais generalista)
+venv
+.venv
+env/
+
+# cache do Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Notebooks e scripts que não são necessários na produção
+notebooks/
+scripts/
+tests/
+
+# configuração de IDEs
+.vscode/
+.idea/
+
+# Dados brutos que não são usados pela app final
+data/raw/
+
+# Ficheiros do Terraform
+terraform/
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.backup
