@@ -1,0 +1,50 @@
+name: CI/CD - Build and Deploy to AWS App Runner
+
+# Gatilho: workflow roda sempre que houver um push na branch 'main'
+on:
+  push:
+    branches:
+      - main
+
+# Variáveis de ambiente disponíveis para todos os jobs
+env:
+  AWS_REGION: us-east-2 
+  ECR_REPOSITORY: agrovision-prod-app 
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest # roda numa máquina virtual Linux
+
+    # Permissões necessárias para o job
+    permissions:
+      id-token: write # Necessário para a autenticação OIDC com a AWS
+      contents: read  # Necessário para fazer o checkout do código
+
+    steps:
+      # 1. Faz o checkout do código na repo
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Configura as credenciais da AWS
+      # Esta ação usa o OIDC para assumir o papel que foi feito com o Terraform.
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }} # Usaremos um segredo do GitHub para o ARN
+          aws-region: ${{ env.AWS_REGION }}
+
+      # 3. Faz o login ECR
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # 4. Constrói, tagueia e envia a imagem para o ECR
+      - name: Build, tag, and push image to Amazon ECR
+        env:
+          # Usa a URL do repositório obtida no passo anterior
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: latest
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
