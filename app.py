@@ -1,5 +1,5 @@
 # ==============================================================================
-# app.py - Dashboard Interativo para o AgroVision (Versão Otimizada)
+# app.py - Dashboard Interativo para o AgroVision com o streamlit
 # ==============================================================================
 
 import streamlit as st
@@ -27,14 +27,13 @@ def carregar_modelo():
 
 @st.cache_data
 def carregar_dados_localizacao():
-    """Carrega os dados para obter a lista de municípios e coordenadas."""
+    """Carrega o ficheiro de localizações otimizado para um arranque rápido."""
     try:
-        caminho_dados = 'data/processed/dataset_final_completo.parquet'
+        # Usando o ficheiro de localizações otimizado para a UI (levemente otimizado) 
+        caminho_dados = 'data/processed/locations.parquet'
         df = pd.read_parquet(caminho_dados)
-        
-        df_localizacoes = df[['municipio_nome', 'uf', 'latitude', 'longitude']].drop_duplicates().sort_values(by='municipio_nome')
-        df_localizacoes['display_name'] = df_localizacoes['municipio_nome'] + ' (' + df_localizacoes['uf'] + ')'
-        return df_localizacoes
+        df['display_name'] = df['municipio_nome'] + ' (' + df['uf'] + ')'
+        return df
     except FileNotFoundError:
         return None
 
@@ -48,7 +47,7 @@ st.markdown("Selecione o município e insira os dados da safra para obter uma pr
 
 # Verificar se os dados foram carregados
 if df_localizacoes is None or modelo is None:
-    st.error("ERRO: Arquivos de dados ('dataset_final_completo.parquet') ou do modelo não foram encontrados. Execute os notebooks de preparação.")
+    st.error("ERRO: Arquivos de dados ('locations.parquet') ou do modelo não foram encontrados. Execute os notebooks de preparação.")
 else:
     col1, col2 = st.columns(2)
 
@@ -79,7 +78,7 @@ else:
             help="Índice de Vegetação por Diferença Normalizada - uma medida da saúde da vegetação."
         )
 
-    # Botão para fazer a previsão
+    # Botão para prever
     if st.button("📊 Gerar Previsão", use_container_width=True):
         # Criar um DataFrame com os dados de entrada
         dados_entrada = pd.DataFrame({
@@ -95,7 +94,7 @@ else:
         # Fazer a previsão
         previsao = modelo.predict(dados_entrada)
         
-        # Exibir o resultado
+        # resultado
         st.success("### Previsão de Rendimento Gerada!")
         st.metric(
             label="Rendimento Médio Estimado",
