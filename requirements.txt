@@ -1,28 +1,25 @@
-# Core Data Science
-numpy
+#  Core de Análise e Ciência de Dados
 pandas
+numpy
 scikit-learn
 
-# Data Visualization
+#  Visu de Dados
 matplotlib
 seaborn
 
-# Geospatial Analysis
+#  Análise Geoespacial
 geopandas
 earthengine-api
 
-# API / Dashboard
+#  Interface Web (Dashboard)
 streamlit
-fastapi
-uvicorn
 
-# API Communication
+#  Comunicação com APIs Externas
 requests
 
-# Development Environment
-ipykernel
-
-# Utilities
-joblib
+#  Utilitários
+joblib     # Para salvar/carregar o modelo de ML
+tqdm       #  barras de progresso
 python-dotenv
-tqdm
+pyarrow    # Necessário para ler ficheiros .parquet
+
