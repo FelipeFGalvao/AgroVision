@@ -1,8 +1,5 @@
 # ===================================================================
 # Bloco 1: Configuração do Provedor e do Backend
-# Define que estamos usando a AWS e a região escolhida (us-east-2).
-# O backend "local" significa que o ficheiro de estado do Terraform
-# (que rastreia a infraestrutura) será guardado na sua máquina.
 # ===================================================================
 terraform {
   required_providers {
@@ -22,15 +19,13 @@ provider "aws" {
 
 # ===================================================================
 # Bloco 2: Registro de Contêiner (ECR)
-# Cria o repositório privado para armazenar a imagem Docker da sua
-# aplicação, conforme a sua escolha.
 # ===================================================================
 resource "aws_ecr_repository" "agrovision_repo" {
-  name                 = "agrovision-prod-app" # Nome do repositório
+  name                 = "agrovision-prod-app" 
   image_tag_mutability = "MUTABLE"             # Permite sobrescrever tags como "latest"
 
   image_scanning_configuration {
-    scan_on_push = true # Boa prática: verifica vulnerabilidades a cada novo push
+    scan_on_push = true # olhar vulnerabilidades a cada push
   }
 
   tags = {
@@ -41,33 +36,37 @@ resource "aws_ecr_repository" "agrovision_repo" {
 
 # ===================================================================
 # Bloco 3: Serviço da Aplicação (App Runner)
-# O coração da sua infraestrutura. Cria o serviço App Runner que
-# executa a sua aplicação.
 # ===================================================================
 resource "aws_apprunner_service" "agrovision_service" {
-  service_name = "agrovision-prod-service" # Nome do serviço
+  service_name = "agrovision-prod-service" 
 
-  # Define a origem da imagem: o nosso repositório ECR
   source_configuration {
       authentication_configuration {
         access_role_arn = aws_iam_role.apprunner_access_role.arn
     }
     image_repository {
-      image_identifier      = "${aws_ecr_repository.agrovision_repo.repository_url}:latest" # Aponta para a tag 'latest'
+      image_identifier      = "${aws_ecr_repository.agrovision_repo.repository_url}:latest" 
       image_repository_type = "ECR"
       image_configuration {
-        port = "8501" # A porta que o Streamlit usa dentro do contêiner
+        port = "8501" 
       }
     }
-    # A configuração de auto-deploy é ativada por padrão quando a origem é ECR.
-    # O App Runner irá automaticamente buscar a nova imagem quando a tag 'latest' for atualizada.
     auto_deployments_enabled = true
   }
 
   # Define os recursos de CPU e Memória, conforme a sua escolha
   instance_configuration {
-    cpu    = "2048" # 2 vCPU (2048 = 2 * 1024)
-    memory = "4096" # 4 GB RAM (4096 = 4 * 1024)
+    cpu    = "2048" # 2 vCPU
+    memory = "4096" # 4 GB RAM
+  }
+
+  health_check_configuration {
+    protocol    = "TCP" 
+    interval    = 20    
+    timeout     = 10    
+    path        = "/"   
+    healthy_threshold   = 1 
+    unhealthy_threshold = 5 
   }
 
   # A escalabilidade é gerenciada pelo App Runner. Esta configuração
@@ -87,8 +86,8 @@ resource "aws_apprunner_service" "agrovision_service" {
 resource "aws_apprunner_auto_scaling_configuration_version" "default" {
   auto_scaling_configuration_name = "default-agrovision-config"
   max_concurrency = 100 # Número de requisições simultâneas por instância antes de escalar
-  min_size        = 1   # Sempre manter pelo menos 1 instância ativa
-  max_size        = 3   # Escalar até no máximo 3 instâncias
+  min_size        = 1   
+  max_size        = 3   
   
   tags = {
     Project = "agrovision-prod"
@@ -98,9 +97,6 @@ resource "aws_apprunner_auto_scaling_configuration_version" "default" {
 
 # ===================================================================
 # Bloco 4: Permissões para o CI/CD (GitHub Actions)
-# Configura a conexão segura entre o GitHub e a AWS usando OIDC.
-# Isso permite que o GitHub Actions faça o deploy sem precisar de
-# chaves de acesso secretas.
 # ===================================================================
 
 # 1. Cria o Provedor de Identidade OIDC para o GitHub
@@ -111,7 +107,6 @@ resource "aws_iam_openid_connect_provider" "github" {
 }
 
 # 2. Cria a Política de Permissão para o GitHub Actions
-# Define exatamente o que o GitHub pode fazer: apenas enviar a imagem para o ECR.
 resource "aws_iam_policy" "github_actions_policy" {
   name        = "GitHubActionsECRPolicy-AgroVision"
   description = "Policy for GitHub Actions to push images to ECR for AgroVision"
@@ -120,22 +115,28 @@ resource "aws_iam_policy" "github_actions_policy" {
     Version = "2012-10-17",
     Statement = [
       {
+        # Declaração 1: Permite obter o token de login para a região
+        Effect   = "Allow",
+        Action   = "ecr:GetAuthorizationToken",
+        Resource = "*"
+      },
+      {
+        # Declaração 2: Permite enviar a imagem para o repositório específico
         Effect   = "Allow",
         Action   = [
-          "ecr:GetAuthorizationToken",
           "ecr:BatchCheckLayerAvailability",
-          "ecr:InitiateLayerUpload",
-          "ecr:UploadLayerPart",
           "ecr:CompleteLayerUpload",
-          "ecr:PutImage"
+          "ecr:InitiateLayerUpload",
+          "ecr:PutImage",
+          "ecr:UploadLayerPart"
         ],
         Resource = aws_ecr_repository.agrovision_repo.arn
       }
     ]
-  } )
+  })
 }
 
-# 3. Cria o "Role" (Papel) que o GitHub Actions irá assumir
+# 3. Cria o "Role" que o GitHub Actions irá assumir
 resource "aws_iam_role" "github_actions_role" {
   name = "GitHubActionsRole-AgroVision"
   assume_role_policy = jsonencode({
@@ -149,7 +150,6 @@ resource "aws_iam_role" "github_actions_role" {
         Action = "sts:AssumeRoleWithWebIdentity",
         Condition = {
           StringLike = {
-            # V-- ESTA É A LINHA CORRETA PARA EDITAR --V
             "token.actions.githubusercontent.com:sub" = "repo:FelipeFGalvao/AgroVision:*"
           }
         }
@@ -166,8 +166,6 @@ resource "aws_iam_role_policy_attachment" "attach_ecr_policy" {
 
 # ===================================================================
 # Bloco 5: Outputs
-# Exibe informações úteis após a execução do Terraform, como a URL
-# da sua aplicação.
 # ===================================================================
 output "app_runner_service_url" {
   description = "The URL of the AgroVision web application"
@@ -186,8 +184,6 @@ output "github_actions_role_arn" {
 
 # ===================================================================
 # Bloco EXTRA: Papel de Acesso para o App Runner
-# Cria um papel que o App Runner pode assumir para ter permissão
-# de acessar outros serviços da AWS, como o ECR.
 # ===================================================================
 resource "aws_iam_role" "apprunner_access_role" {
   name = "AppRunnerECRAccessRole-AgroVision"
