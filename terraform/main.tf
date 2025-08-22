@@ -61,12 +61,12 @@ resource "aws_apprunner_service" "agrovision_service" {
   }
 
   health_check_configuration {
-    protocol    = "TCP" 
-    interval    = 20    
-    timeout     = 10    
-    path        = "/"   
+    protocol    = "HTTP"  
+    path        = "/healthz" 
+    interval    = 20       
+    timeout     = 10       
     healthy_threshold   = 1 
-    unhealthy_threshold = 5 
+    unhealthy_threshold = 3 
   }
 
   # A escalabilidade é gerenciada pelo App Runner. Esta configuração
