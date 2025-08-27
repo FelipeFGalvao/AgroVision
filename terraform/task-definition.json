@@ -1,0 +1,22 @@
+{
+    "family": "agrovision-task",
+    "containerDefinitions": [
+        {
+            "name": "agrovision-app",
+            "image": "<IMAGE_URI>",
+            "cpu": 2048,
+            "memory": 8192,
+            "essential": true,
+            "portMappings": [
+                {
+                    "containerPort": 8501,
+                    "protocol": "tcp"
+                }
+            ]
+        }
+    ],
+    "requiresCompatibilities": ["FARGATE"],
+    "networkMode": "awsvpc",
+    "cpu": "2048",
+    "memory": "8192" 
+}

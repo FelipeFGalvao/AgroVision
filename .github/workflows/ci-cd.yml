@@ -1,51 +1,66 @@
-name: CI/CD - Build and Deploy to AWS App Runner
+name: CI/CD - Build and Deploy to AWS Fargate
 
-# Gatilho: workflow roda sempre que houver um push na branch 'main'
 on:
   push:
     branches:
       - main
-      - debug/simplify-app
 
-# Variáveis de ambiente disponíveis para todos os jobs
 env:
-  AWS_REGION: us-east-2 
-  ECR_REPOSITORY: agrovision-prod-app 
+  AWS_REGION: us-east-2
+  ECR_REPOSITORY: agrovision-prod-app
+  ECS_CLUSTER: agrovision-cluster 
+  ECS_SERVICE: agrovision-service 
+  ECS_TASK_DEFINITION: terraform/task-definition.json 
+  CONTAINER_NAME: agrovision-app 
 
 jobs:
   build-and-deploy:
     name: Build and Deploy
-    runs-on: ubuntu-latest # roda numa máquina virtual Linux
+    runs-on: ubuntu-latest
 
-    # Permissões necessárias para o job
     permissions:
-      id-token: write # Necessário para a autenticação OIDC com a AWS
-      contents: read  # Necessário para fazer o checkout do código
+      id-token: write 
+      contents: read  
 
     steps:
-      # 1. Faz o checkout do código na repo
+      
       - name: Checkout code
         uses: actions/checkout@v4
-
-      # 2. Configura as credenciais da AWS
-      # Esta ação usa o OIDC para assumir o papel que foi feito com o Terraform.
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }} # Usaremos um segredo do GitHub para o ARN
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }} 
           aws-region: ${{ env.AWS_REGION }}
 
-      # 3. Faz o login ECR
+      
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      # 4. Constrói, tagueia e envia a imagem para o ECR
+      
       - name: Build, tag, and push image to Amazon ECR
+        id: build-image
         env:
-          # Usa a URL do repositório obtida no passo anterior
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: latest
+          IMAGE_TAG: ${{ github.sha }} 
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+      - name: Render Amazon ECS task definition
+        id: render-task-definition
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ env.ECS_TASK_DEFINITION }}
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ steps.build-image.outputs.image }}
+
+      
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.render-task-definition.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true 
