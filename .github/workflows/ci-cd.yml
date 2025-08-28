@@ -1,5 +1,4 @@
 name: CI/CD - Build and Deploy to AWS Fargate
-
 on:
   push:
     branches:

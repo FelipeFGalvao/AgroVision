@@ -56,6 +56,7 @@ resource "aws_iam_role" "github_actions_role" {
       }
     ]
   })
+   depends_on = [aws_iam_openid_connect_provider.github]
 }
 
 resource "aws_iam_role_policy_attachment" "github_actions_ecr_attach" {
@@ -90,7 +91,7 @@ resource "aws_vpc" "main" {
 resource "aws_subnet" "public_a" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.1.0/24"
-  availability_zone = "us-east-2"
+  availability_zone = "us-east-2a"
 
   tags = {
     Name = "agrovision-public-a"
@@ -100,7 +101,7 @@ resource "aws_subnet" "public_a" {
 resource "aws_subnet" "public_b" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.2.0/24"
-  availability_zone = "us-east-2"
+  availability_zone = "us-east-2b"
 
   tags = {
     Name = "agrovision-public-b"
@@ -158,6 +159,8 @@ resource "aws_lb_target_group" "app" {
   protocol = "HTTP"
   vpc_id   = aws_vpc.main.id
 
+  target_type = "ip"
+
   health_check {
     path                = "/healthz"
     protocol            = "HTTP"
@@ -181,6 +184,11 @@ resource "aws_lb_listener" "http" {
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.app.arn
+  }
+    depends_on = [aws_lb_target_group.app]
+
+    lifecycle {
+      create_before_destroy = true
   }
 }
 
