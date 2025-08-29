@@ -18,5 +18,6 @@
     "requiresCompatibilities": ["FARGATE"],
     "networkMode": "awsvpc",
     "cpu": "2048",
-    "memory": "8192" 
+    "memory": "8192",
+    "executionRoleArn": "arn:aws:iam::130713583559:role/agrovision-ecs-task-execution-role" 
 }
