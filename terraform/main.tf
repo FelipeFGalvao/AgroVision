@@ -11,7 +11,7 @@ resource "aws_iam_openid_connect_provider" "github" {
 
 resource "aws_iam_policy" "github_actions_ecr_policy" {
   name        = "GitHubActionsECRPolicy-AgroVision-Fargate"
-  description = "Policy for GitHub Actions to push images to ECR for AgroVision Fargate"
+  description = "Policy for GitHub Actions to push images to ECR, register ECS task definitions, pass roles, and describe ECS services for AgroVision Fargate"
 
   policy = jsonencode({
     Version = "2012-10-17",
@@ -35,7 +35,9 @@ resource "aws_iam_policy" "github_actions_ecr_policy" {
       {
         Effect   = "Allow",
         Action   = [
-          "ecs:RegisterTaskDefinition" 
+          "ecs:RegisterTaskDefinition",
+          "ecs:DescribeServices",
+          "ecs:UpdateService"
         ],
         Resource = "*" 
       },
@@ -49,7 +51,6 @@ resource "aws_iam_policy" "github_actions_ecr_policy" {
     ]
   })
 }
-
 resource "aws_iam_role" "github_actions_role" {
   name = "GitHubActionsRole-AgroVision-Fargate"
 
