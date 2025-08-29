@@ -31,6 +31,13 @@ resource "aws_iam_policy" "github_actions_ecr_policy" {
           "ecr:UploadLayerPart"
         ],
         Resource = aws_ecr_repository.agrovision_repo.arn
+      },
+      {
+        Effect   = "Allow",
+        Action   = [
+          "ecs:RegisterTaskDefinition" 
+        ],
+        Resource = "*" 
       }
     ]
   })
