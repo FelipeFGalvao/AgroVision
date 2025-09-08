@@ -82,7 +82,7 @@ resource "aws_iam_role_policy_attachment" "github_actions_ecr_attach" {
 resource "aws_ecr_repository" "agrovision_repo" {
   name                 = "agrovision-prod-app"
   image_tag_mutability = "MUTABLE"
-
+  force_delete         = true
   image_scanning_configuration {
     scan_on_push = true
   }
