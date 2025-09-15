@@ -10,8 +10,8 @@ resource "aws_iam_openid_connect_provider" "github" {
 }
 
 resource "aws_iam_policy" "github_actions_ecr_policy" {
-  name        = "GitHubActionsECRPolicy-AgroVision-Fargate"
-  description = "Policy for GitHub Actions to push images to ECR, register ECS task definitions, pass roles, and describe ECS services for AgroVision Fargate"
+  name        = "GitHubActionsECRPolicy-AvatiVision-Fargate"
+  description = "Policy for GitHub Actions to push images to ECR, register ECS task definitions, pass roles, and describe ECS services for AvatiVision Fargate"
 
   policy = jsonencode({
     Version = "2012-10-17",
@@ -30,7 +30,7 @@ resource "aws_iam_policy" "github_actions_ecr_policy" {
           "ecr:PutImage",
           "ecr:UploadLayerPart"
         ],
-        Resource = aws_ecr_repository.agrovision_repo.arn
+        Resource = aws_ecr_repository.avativision_repo.arn
       },
       {
         Effect   = "Allow",
@@ -52,7 +52,7 @@ resource "aws_iam_policy" "github_actions_ecr_policy" {
   })
 }
 resource "aws_iam_role" "github_actions_role" {
-  name = "GitHubActionsRole-AgroVision-Fargate"
+  name = "GitHubActionsRole-AvatiVision-Fargate"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -65,7 +65,7 @@ resource "aws_iam_role" "github_actions_role" {
         Action = "sts:AssumeRoleWithWebIdentity",
         Condition = {
           StringLike = {
-            "token.actions.githubusercontent.com:sub" = "repo:FelipeFGalvao/AgroVision:*"
+            "token.actions.githubusercontent.com:sub" = "repo:FelipeFGalvao/AvatiVision:*"
           }
         }
       }
@@ -79,8 +79,8 @@ resource "aws_iam_role_policy_attachment" "github_actions_ecr_attach" {
   policy_arn = aws_iam_policy.github_actions_ecr_policy.arn
 }
 
-resource "aws_ecr_repository" "agrovision_repo" {
-  name                 = "agrovision-prod-app"
+resource "aws_ecr_repository" "avativision_repo" {
+  name                 = "avativision-prod-app"
   image_tag_mutability = "MUTABLE"
   force_delete         = true
   image_scanning_configuration {
@@ -99,7 +99,7 @@ resource "aws_vpc" "main" {
   enable_dns_support   = true
 
   tags = {
-    Name = "agrovision-vpc"
+    Name = "avativision-vpc"
   }
 }
 
@@ -109,7 +109,7 @@ resource "aws_subnet" "public_a" {
   availability_zone = "us-east-2a"
 
   tags = {
-    Name = "agrovision-public-a"
+    Name = "avativision-public-a"
   }
 }
 
@@ -119,7 +119,7 @@ resource "aws_subnet" "public_b" {
   availability_zone = "us-east-2b"
 
   tags = {
-    Name = "agrovision-public-b"
+    Name = "avativision-public-b"
   }
 }
 
@@ -127,7 +127,7 @@ resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "agrovision-igw"
+    Name = "avativision-igw"
   }
 }
 
@@ -140,7 +140,7 @@ resource "aws_route_table" "public" {
   }
 
   tags = {
-    Name = "agrovision-public-rt"
+    Name = "avativision-public-rt"
   }
 }
 
@@ -155,7 +155,7 @@ resource "aws_route_table_association" "public_b" {
 }
 
 resource "aws_lb" "main" {
-  name               = "agrovision-alb"
+  name               = "avativision-alb"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb.id]
@@ -164,12 +164,12 @@ resource "aws_lb" "main" {
   enable_deletion_protection = false
 
   tags = {
-    Name = "agrovision-alb"
+    Name = "avativision-alb"
   }
 }
 
 resource "aws_lb_target_group" "app" {
-  name     = "agrovision-tg"
+  name     = "avativision-tg"
   port     = 8501
   protocol = "HTTP"
   vpc_id   = aws_vpc.main.id
@@ -187,7 +187,7 @@ resource "aws_lb_target_group" "app" {
   }
 
   tags = {
-    Name = "agrovision-tg"
+    Name = "avativision-tg"
   }
 }
 
@@ -208,7 +208,7 @@ resource "aws_lb_listener" "http" {
 }
 
 resource "aws_security_group" "alb" {
-  name        = "agrovision-alb-sg"
+  name        = "avativision-alb-sg"
   description = "Allow HTTP/HTTPS traffic to ALB"
   vpc_id      = aws_vpc.main.id
 
@@ -232,20 +232,20 @@ resource "aws_security_group" "alb" {
   }
 
   tags = {
-    Name = "agrovision-alb-sg"
+    Name = "avativision-alb-sg"
   }
 }
 
 resource "aws_ecs_cluster" "main" {
-  name = "agrovision-cluster"
+  name = "avativision-cluster"
 
   tags = {
-    Name = "agrovision-cluster"
+    Name = "avativision-cluster"
   }
 }
 
 resource "aws_ecs_task_definition" "app" {
-  family                   = "agrovision-task"
+  family                   = "avativision-task"
   cpu                      = "2048"
   memory                   = "8192"
   network_mode             = "awsvpc"
@@ -255,8 +255,8 @@ resource "aws_ecs_task_definition" "app" {
 
   container_definitions = jsonencode([
     {
-      name        = "agrovision-app"
-      image       = "${aws_ecr_repository.agrovision_repo.repository_url}:latest"
+      name        = "avativision-app"
+      image       = "${aws_ecr_repository.avativision_repo.repository_url}:latest"
       cpu         = 2048
       memory      = 8192
       essential   = true
@@ -279,12 +279,12 @@ resource "aws_ecs_task_definition" "app" {
   ])
 
   tags = {
-    Name = "agrovision-task"
+    Name = "avativision-task"
   }
 }
 
 resource "aws_ecs_service" "app" {
-  name            = "agrovision-service"
+  name            = "avativision-service"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.app.arn
   desired_count   = 1
@@ -298,7 +298,7 @@ resource "aws_ecs_service" "app" {
 
   load_balancer {
     target_group_arn = aws_lb_target_group.app.arn
-    container_name   = "agrovision-app"
+    container_name   = "avativision-app"
     container_port   = 8501
   }
 
@@ -310,12 +310,12 @@ resource "aws_ecs_service" "app" {
   ]
 
   tags = {
-    Name = "agrovision-service"
+    Name = "avativision-service"
   }
 }
 
 resource "aws_security_group" "ecs_task" {
-  name        = "agrovision-ecs-task-sg"
+  name        = "avativision-ecs-task-sg"
   description = "Allow traffic from ALB to ECS tasks"
   vpc_id      = aws_vpc.main.id
 
@@ -333,12 +333,12 @@ resource "aws_security_group" "ecs_task" {
   }
 
   tags = {
-    Name = "agrovision-ecs-task-sg"
+    Name = "avativision-ecs-task-sg"
   }
 }
 
 resource "aws_iam_role" "ecs_task_execution_role" {
-  name = "agrovision-ecs-task-execution-role"
+  name = "avativision-ecs-task-execution-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -361,7 +361,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy_attach
 }
 
 resource "aws_iam_role" "ecs_task_role" {
-  name = "agrovision-ecs-task-role"
+  name = "avativision-ecs-task-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -384,11 +384,11 @@ resource "aws_iam_role_policy_attachment" "ecs_task_role_policy_attach" {
 }
 
 resource "aws_cloudwatch_log_group" "ecs_logs" {
-  name              = "/ecs/agrovision-app"
+  name              = "/ecs/avativision-app"
   retention_in_days = 7
 
   tags = {
-    Name = "agrovision-ecs-logs"
+    Name = "avativision-ecs-logs"
   }
 }
 

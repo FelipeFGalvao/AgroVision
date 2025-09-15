@@ -6,11 +6,11 @@ on:
 
 env:
   AWS_REGION: us-east-2
-  ECR_REPOSITORY: agrovision-prod-app
-  ECS_CLUSTER: agrovision-cluster 
-  ECS_SERVICE: agrovision-service 
+  ECR_REPOSITORY: avativision-prod-app
+  ECS_CLUSTER: avativision-cluster 
+  ECS_SERVICE: avativision-service 
   ECS_TASK_DEFINITION: terraform/task-definition.json 
-  CONTAINER_NAME: agrovision-app 
+  CONTAINER_NAME: avativision-app 
 
 jobs:
   build-and-deploy:
