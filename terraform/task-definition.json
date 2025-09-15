@@ -1,8 +1,8 @@
 {
-    "family": "agrovision-task",
+    "family": "avativision-task",
     "containerDefinitions": [
         {
-            "name": "agrovision-app",
+            "name": "avativision-app",
             "image": "<IMAGE_URI>",
             "cpu": 2048,
             "memory": 8192,
@@ -19,5 +19,5 @@
     "networkMode": "awsvpc",
     "cpu": "2048",
     "memory": "8192",
-    "executionRoleArn": "arn:aws:iam::130713583559:role/agrovision-ecs-task-execution-role" 
+    "executionRoleArn": "arn:aws:iam::130713583559:role/avativision-ecs-task-execution-role" 
 }
