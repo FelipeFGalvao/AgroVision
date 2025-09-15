@@ -1,7 +1,3 @@
-# ==============================================================================
-# app.py - Dashboard Interativo para o AgroVision com o streamlit
-# ==============================================================================
-
 import streamlit as st
 import pandas as pd
 import joblib
@@ -9,7 +5,7 @@ import numpy as np
 
 # --- Configuração da Página ---
 st.set_page_config(
-    page_title="AgroVision - Previsão de Safras",
+    page_title="AvatiVision - Previsão de Safras",
     page_icon="🌽",
     layout="wide"
 )
@@ -20,7 +16,7 @@ st.set_page_config(
 def carregar_modelo():
     """Carrega o modelo treinado do arquivo."""
     try:
-        modelo = joblib.load('models/agrovision_random_forest_v1.joblib')
+        modelo = joblib.load('models/avativision_random_forest_v1.joblib')
         return modelo
     except FileNotFoundError:
         return None
@@ -42,7 +38,7 @@ modelo = carregar_modelo()
 df_localizacoes = carregar_dados_localizacao()
 
 # --- Interface do Usuário (UI) ---
-st.title("🌽 AgroVision: Sistema de Previsão de Produtividade de Milho")
+st.title("🌽 AvatiVision: Sistema de Previsão de Produtividade de Milho")
 st.markdown("Selecione o município e insira os dados da safra para obter uma previsão de rendimento.")
 
 # Verificar se os dados foram carregados
